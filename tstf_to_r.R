@@ -102,11 +102,22 @@ ggAcf(t3$residuals)+ggtitle("ACF")
 gghistogram(t3$residuals) + ggtitle("Histogram of residuals")
 
 
+t4 <- arimax(logy, order = c(0,0,3), seasonal = c(1,0,0),
+             xreg = mydata[,c("out1", "out2")],
+             xtransf = mydata[,c("pulse","step")], transfer = list(c(1,0),c(0,0)))
+
+summary(t4)
+tsdiag(t4, gof=24, tol = 0.1, col = "red", omit.initial = FALSE)
+ggAcf(t4$residuals)+ggtitle("ACF wi3h seasonal AR(1), IO, pulse AR(1) and step")
+gghistogram(t4$residuals) + ggtitle("Histogram of residuals")
+
+##test for patterns in residuals
+runs(t4$residuals)
 
 #play
 
 
-tx <- arimax(logy, order = c(0,0,3), seasonal = c(1,0,1),
+tx <- arimax(logy, order = c(2,0,1), seasonal = c(1,0,0),
              xreg = mydata[,c("out1", "out2")],
              xtransf = mydata[,c("pulse","step")], transfer = list(c(1,0),c(0,0)))
 
