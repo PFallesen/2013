@@ -1,15 +1,16 @@
-Paths = c("C:/Users/pf/Dropbox (Rockwool Foundation)/RFF/Fallesen_2013 reform/git")
+Paths = c("C:/Users/pf/Documents/2013")
 names(Paths) = c("pf")
 setwd(Paths[Sys.info()[7]])
 
 ##install.packages(c("car","aod","usethis"),dep=TRUE)
 
-library(usethis)
 
 
 
 
 rm(list=ls())
+
+library(usethis)
 library(stats)
 library(foreign)
 library(TSA) #Cryer & Chen 
@@ -49,7 +50,7 @@ autoplot(logy) +
 
 res <- residuals(naive(logy))
 autoplot(res) + xlab("Month") + ylab("") +
-  ggtitle("Residuals from naïve method")
+  ggtitle("Residuals from na?ve method")
 
 gghistogram(res) + ggtitle("Histogram of residuals")
 
@@ -86,7 +87,7 @@ t2 <- arimax(logy, order = c(0,0,3), seasonal = c(0,1,1),
 
 summary(t2)
 tsdiag(t2, gof=24, tol = 0.1, col = "red", omit.initial = FALSE)
-ggAcf(t2$residuals)+ggtitle("ACF wi3h seasonal AR(1), IO, pulse AR(1) and step")
+ggAcf(t2$residuals)+ggtitle("ACF")
 gghistogram(t2$residuals) + ggtitle("Histogram of residuals")
 
 
@@ -97,8 +98,10 @@ t3 <- arimax(logy, order = c(3,0,0), seasonal = c(1,1,1),
 
 summary(t3)
 tsdiag(t3, gof=24, tol = 0.1, col = "red", omit.initial = FALSE)
-ggAcf(t3$residuals)+ggtitle("ACF wi3h seasonal AR(1), IO, pulse AR(1) and step")
+ggAcf(t3$residuals)+ggtitle("ACF")
 gghistogram(t3$residuals) + ggtitle("Histogram of residuals")
+
+
 
 #play
 
