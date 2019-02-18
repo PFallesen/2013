@@ -2,7 +2,7 @@ Paths = c("C:/Users/pf/Documents/2013")
 names(Paths) = c("pf")
 setwd(Paths[Sys.info()[7]])
 
-##install.packages(c("car","aod","usethis"),dep=TRUE)
+#install.packages(c("usethis"),dep=TRUE)
 
 
 
