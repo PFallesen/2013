@@ -1,0 +1,113 @@
+Paths = c("C:/Users/pf/Dropbox (Rockwool Foundation)/RFF/Fallesen_2013 reform/git")
+names(Paths) = c("pf")
+setwd(Paths[Sys.info()[7]])
+
+##install.packages(c("car","aod","usethis"),dep=TRUE)
+
+library(usethis)
+
+
+
+
+rm(list=ls())
+library(stats)
+library(foreign)
+library(TSA) #Cryer & Chen 
+library(car)
+library(aod)
+library(forecast)
+library(ggplot2)
+mydata <- read.dta("data_tstf_old.dta")
+
+#outliers
+
+mydata$out1 <- as.numeric(mydata$time == 163)
+mydata$out2 <- as.numeric(mydata$time == 181)
+mydata$out3 <- as.numeric(mydata$time == 164)
+mydata$out4 <- as.numeric(mydata$time == 165)
+
+
+#intervention
+
+mydata$pulse <- as.numeric(mydata$time == 166)
+
+mydata$step <- as.numeric(mydata$time >= 166)
+
+y<-ts(mydata$log_incident, f=12)
+
+#Log and time series set the data
+logy <- log(mydata$log_incident)
+
+logy <- ts(logy, frequency = 12)
+
+#plot the time series
+plot(logy)
+
+autoplot(logy) +
+  xlab("Month") + ylab("log(Number of Divorces)") +
+  ggtitle("Log of divorce frequency (Monthly ending December, 2017)")
+
+res <- residuals(naive(logy))
+autoplot(res) + xlab("Month") + ylab("") +
+  ggtitle("Residuals from naïve method")
+
+gghistogram(res) + ggtitle("Histogram of residuals")
+
+ggAcf(res) + ggtitle("ACF of naive residuals")
+
+f1 <- arima(logy, order = c(1,0,0))
+ggAcf(f1$residuals) + ggtitle("ACF of AR(1)")
+
+f2 <- arima(logy, order = c(0,1,0))
+ggAcf(f2$residuals) + ggtitle("ACF of Random Walk")
+
+f3 <- arima(logy, order = c(1,1,0))
+ggAcf(f3$residuals) + ggtitle("ACF of diff. AR(1)")
+
+f4 <- arima(logy, order = c(1,1,1))
+ggAcf(f4$residuals) + ggtitle("ACF of diff. AR(1),MA(1)")
+
+
+f5 <- arima(logy, order = c(1,0,2), seasonal = c(1,0,0))
+ggAcf(f5$residuals) + ggtitle("ACF of AR(1), MA(2) with seasonal AR(1)")
+
+auto.arima(logy)
+arimax(logy, order = c(1,1,1), seasonal = c(0,0,2))
+
+t1 <- arimax(logy, order = c(1,1,1), seasonal = c(0,0,2),
+             xreg = mydata[,c("out1", "out2","out4")])
+summary(t1)
+acf(t1$residuals)
+
+
+t2 <- arimax(logy, order = c(0,0,3), seasonal = c(0,1,1),
+             xreg = mydata[,c("out1", "out2")],
+             xtransf = mydata[,c("pulse","step")], transfer = list(c(1,0),c(0,0)))
+
+summary(t2)
+tsdiag(t2, gof=24, tol = 0.1, col = "red", omit.initial = FALSE)
+ggAcf(t2$residuals)+ggtitle("ACF wi3h seasonal AR(1), IO, pulse AR(1) and step")
+gghistogram(t2$residuals) + ggtitle("Histogram of residuals")
+
+
+
+t3 <- arimax(logy, order = c(3,0,0), seasonal = c(1,1,1),
+             xreg = mydata[,c("out1", "out2")],
+             xtransf = mydata[,c("pulse","step")], transfer = list(c(1,0),c(0,0)))
+
+summary(t3)
+tsdiag(t3, gof=24, tol = 0.1, col = "red", omit.initial = FALSE)
+ggAcf(t3$residuals)+ggtitle("ACF wi3h seasonal AR(1), IO, pulse AR(1) and step")
+gghistogram(t3$residuals) + ggtitle("Histogram of residuals")
+
+#play
+
+
+tx <- arimax(logy, order = c(0,0,3), seasonal = c(1,0,1),
+             xreg = mydata[,c("out1", "out2")],
+             xtransf = mydata[,c("pulse","step")], transfer = list(c(1,0),c(0,0)))
+
+summary(tx)
+tsdiag(tx, gof=24, tol = 0.1, col = "red", omit.initial = FALSE)
+ggAcf(tx$residuals)+ggtitle("ACF wi3h seasonal AR(1), IO, pulse AR(1) and step")
+gghistogram(tx$residuals) + ggtitle("Histogram of residuals")
