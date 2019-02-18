@@ -108,11 +108,12 @@ t4 <- arimax(logy, order = c(0,0,3), seasonal = c(1,0,0),
 
 summary(t4)
 tsdiag(t4, gof=24, tol = 0.1, col = "red", omit.initial = FALSE)
-ggAcf(t4$residuals)+ggtitle("ACF wi3h seasonal AR(1), IO, pulse AR(1) and step")
+ggAcf(t4$residuals)+ggtitle("ACF with MA(3), seasonal AR(1), IOs, pulse AR(1) and step")
 gghistogram(t4$residuals) + ggtitle("Histogram of residuals")
-
 ##test for patterns in residuals
 runs(t4$residuals)
+
+
 
 #play
 
