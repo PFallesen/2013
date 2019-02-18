@@ -3,8 +3,7 @@ names(Paths) = c("pf")
 setwd(Paths[Sys.info()[7]])
 
 #install.packages(c("usethis"),dep=TRUE)
-
-install.packages('tseries',dep=TRUE)
+#install.packages('tseries',dep=TRUE)
 
 
 
@@ -40,28 +39,6 @@ y<-ts(mydata$log_incident, f=12)
 logy <- log(mydata$log_incident)
 
 logy <- ts(logy, frequency = 12)
-
-
-#data for forecast sans intervention
-newdata <- mydata$log_incident [ which(mydata$step==0)]
-log_newdata<-ts(log(newdata))
-pre_int<-auto.arima(log_newdata)
-pre_int
-log_newdata<-ts(log(newdata), frequency = 12)
-acf(pre_int$residuals)
-
-a1<-arima(log_newdata, order = c(0,0,3),s=c(1,0,0),io=c(163))
-summary(a1)
-ggAcf(a1$residuals) + ggtitle("ACF of AR(1)")
-tsdiag(a1, gof=24, tol = 0.1, col = "red", omit.initial = FALSE)
-adf.test(a1, alternative = "stationary")
-fcast<- forecast(a1,f=12, h=50)
-autoplot(logy)
-
-autoplot(fcast) +
-  autolayer(logy, series="Data") +
-  autolayer(fcast$mean, series="Forecasts")
-
 
 
 #plot the time series
