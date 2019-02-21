@@ -43,6 +43,12 @@ logy <- ts(logy, frequency = 12)
 
 #plot the time series
 plot(logy)
+plot(clean)
+pacf(clean)
+
+clean<- tsclean(logy)
+
+plot(y=clean,x=zlag(clean),type='p')
 
 autoplot(logy) +
   xlab("Month") + ylab("log(Number of Divorces)") +
@@ -79,7 +85,7 @@ t1 <- arimax(logy, order = c(1,1,1), seasonal = c(0,0,2),
              xreg = mydata[,c("out1", "out2","out4")])
 summary(t1)
 acf(t1$residuals)
-
+shapiro.test(t1$residuals)
 
 t2 <- arimax(logy, order = c(0,0,3), seasonal = c(0,1,1),
              xreg = mydata[,c("out1", "out2")],
@@ -89,7 +95,7 @@ summary(t2)
 tsdiag(t2, gof=24, tol = 0.1, col = "red", omit.initial = FALSE)
 ggAcf(t2$residuals)+ggtitle("ACF")
 gghistogram(t2$residuals) + ggtitle("Histogram of residuals")
-
+shapiro.test(t2$residuals)
 
 
 t3 <- arimax(logy, order = c(3,0,0), seasonal = c(1,1,1),
@@ -100,7 +106,7 @@ summary(t3)
 tsdiag(t3, gof=24, tol = 0.1, col = "red", omit.initial = FALSE)
 ggAcf(t3$residuals)+ggtitle("ACF")
 gghistogram(t3$residuals) + ggtitle("Histogram of residuals")
-
+shapiro.test(t3$residuals)
 
 t4 <- arimax(logy, order = c(0,0,3), seasonal = c(1,0,0),
              xreg = mydata[,c("out1", "out2")],
@@ -111,6 +117,7 @@ tsdiag(t4, gof=24, tol = 0.1, col = "red", omit.initial = FALSE)
 ggAcf(t4$residuals)+ggtitle("ACF with MA(3), seasonal AR(1), IOs, pulse AR(1) and step")
 gghistogram(t4$residuals) + ggtitle("Histogram of residuals")
 ##test for patterns in residuals
+shapiro.test(t4$residuals)
 runs(t4$residuals)
 
 
@@ -118,11 +125,21 @@ runs(t4$residuals)
 #play
 
 
-tx <- arimax(logy, order = c(2,0,1), seasonal = c(1,0,0),
-             xreg = mydata[,c("out1", "out2")],
+tx <- arimax(logy, order = c(0,0,0),seasonal = c(1,0,0),
+           xreg = mydata[,c("out1", "out2")],
              xtransf = mydata[,c("pulse","step")], transfer = list(c(1,0),c(0,0)))
 
+detectIO(tx)
+
 summary(tx)
+##test for patterns in residuals
+shapiro.test(tx$residuals)
+runs(tx$residuals)
+
 tsdiag(tx, gof=24, tol = 0.1, col = "red", omit.initial = FALSE)
-ggAcf(tx$residuals)+ggtitle("ACF wi3h seasonal AR(1), IO, pulse AR(1) and step")
+ggAcf(tx$residuals)+ggtitle("ACF")
+ggPacf(tx$residuals)+ggtitle("ACF")
 gghistogram(tx$residuals) + ggtitle("Histogram of residuals")
+
+plot(logy)
+points(fitted(tx))
