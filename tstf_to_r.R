@@ -37,16 +37,22 @@ mydata$step <- as.numeric(mydata$time >= 166)
 #Log and time series set the data
 y<-ts(mydata$log_incident, f=12)
 logy <- log(mydata$log_incident)
-
 logy <- ts(logy, frequency = 12)
+mydata$logy <- log(mydata$log_incident)
 
+newdata<-ts(mydata,start=1,f=12)
+
+traindata<-newdata[1:165,]
+traindata<-ts(traindata,f=12)
+
+clean<- tsclean(logy)
 
 #plot the time series
 plot(logy)
 plot(clean)
 pacf(clean)
 
-clean<- tsclean(logy)
+
 
 plot(y=clean,x=zlag(clean),type='p')
 
@@ -98,6 +104,7 @@ gghistogram(t2$residuals) + ggtitle("Histogram of residuals")
 shapiro.test(t2$residuals)
 
 
+
 t3 <- arimax(logy, order = c(3,0,0), seasonal = c(1,1,1),
              xreg = mydata[,c("out1", "out2")],
              xtransf = mydata[,c("pulse","step")], transfer = list(c(1,0),c(0,0)))
@@ -121,12 +128,40 @@ shapiro.test(t4$residuals)
 runs(t4$residuals)
 
 
+t5 <- arimax(logy, order = c(0,0,0), seasonal = c(1,0,0),
+             xreg = mydata[,c("out1", "out2")],
+             xtransf = mydata[,c("pulse","step")], transfer = list(c(1,0),c(0,0)))
+
+summary(t5)
+tsdiag(t5, gof=24, tol = 0.1, col = "red", omit.initial = FALSE)
+ggAcf(t5$residuals)+ggtitle("ACF, seasonal AR(1), IOs, pulse AR(1) and step")
+gghistogram(t5$residuals) + ggtitle("Histogram of residuals")
+##test for patterns in residuals
+shapiro.test(t5$residuals)
+runs(t5$residuals)
+
+t5c <- arimax(clean, order = c(0,0,0), seasonal = c(1,0,0),
+             xreg = mydata[,c("out1", "out2")],
+             xtransf = mydata[,c("pulse","step")], transfer = list(c(1,0),c(0,0)))
+dev.off()
+plot(logy,lw=1)
+points(fitted(t5),pch=19)
+lines(clean,col="red",lw=1)
+points(fitted(t5c),pch=24)
 
 #play
+out<-c("out1")
+test<-auto.arima(traindata[,"logy"],io=163)
+summary(test)
+tsdiag(test, gof=24, tol = 0.1, col = "red", omit.initial = TRUE)
+runs(test$residuals)
+shapiro.test(test$residuals)
+detectIO(test)
 
+fcast<-forecast(test,h=50)
 
-tx <- arimax(logy, order = c(0,0,0),seasonal = c(1,0,0),
-           xreg = mydata[,c("out1", "out2")],
+tx <- arimax(clean, order = c(0,0,0),seasonal = c(1,0,0),
+           #xreg = mydata[,c("out1", "out2")],
              xtransf = mydata[,c("pulse","step")], transfer = list(c(1,0),c(0,0)))
 
 detectIO(tx)
