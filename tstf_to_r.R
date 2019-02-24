@@ -3,7 +3,7 @@ names(Paths) = c("pf")
 setwd(Paths[Sys.info()[7]])
 
 #install.packages(c("usethis"),dep=TRUE)
-#install.packages('tseries',dep=TRUE)
+install.packages('tseries',dep=TRUE)
 
 
 
@@ -17,6 +17,7 @@ library(car)
 library(aod)
 library(forecast)
 library(ggplot2)
+library(tseries)
 mydata <- read.dta("data_tstf_old.dta")
 
 #outliers
