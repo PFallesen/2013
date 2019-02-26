@@ -3,7 +3,7 @@ names(Paths) = c("pf")
 setwd(Paths[Sys.info()[7]])
 
 #install.packages(c("usethis"),dep=TRUE)
-install.packages('tseries',dep=TRUE)
+#install.packages('tseries',dep=TRUE)
 
 
 
@@ -34,6 +34,7 @@ mydata$pulse <- as.numeric(mydata$time == 166)
 
 mydata$step <- as.numeric(mydata$time >= 166)
 
+mydata$year<-floor(mydata$time/12)+2000
 
 #Log and time series set the data
 y<-ts(mydata$log_incident, f=12)
