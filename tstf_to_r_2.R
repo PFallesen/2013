@@ -116,6 +116,8 @@ t5 <- arimax(logy, order = c(0,0,0), seasonal = c(1,0,0),
              xtransf = mydata[,c("pulse","step")], transfer = list(c(1,0),c(0,0)))
 
 summary(t5)
+
+
 tsdiag(t5, gof=24, tol = 0.1, col = "red", omit.initial = FALSE)
 ggAcf(t5$residuals)+ggtitle("ACF, seasonal AR(1), IOs, pulse AR(1) and step")
 gghistogram(t5$residuals) + ggtitle("Histogram of residuals")
