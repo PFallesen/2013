@@ -63,7 +63,7 @@ mydata$logy <- ts(log((mydata$log_incident/mydata$V2)*100000),  f=12, start = c(
 
 newdata<-ts(mydata,start=1,f=12)
 
-traindata<-newdata[1:45,14:14]
+traindata<-newdata[1:54,14:14]
 traindata<-tsclean(traindata)
 traindata<-ts(traindata,f=12,start = c(2009, 1))
 
@@ -133,7 +133,7 @@ shapiro.test(train$residuals)
 runs(train$residuals)
 
 dev.off()
-fcast<-forecast(Arima(traindata,order = c(0,0,0),seasonal = c(1,0,0)),h=51)
+fcast<-forecast(Arima(traindata,order = c(0,0,0),seasonal = c(1,0,0)),h=66)
 summary(fcast)
 plot(fcast,xlab = "Year", ylab = "Monthly divorce per 100,000 marriages", ylim=c(3.7,5.7),lwd=2)
 lines(logy,lwd=3)
