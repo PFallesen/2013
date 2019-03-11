@@ -65,12 +65,12 @@ newdata<-ts(mydata,start=1,f=12)
 
 traindata<-newdata[1:45,14:14]
 traindata<-tsclean(traindata)
-traindata<-ts(traindata,f=12,start = c(2010, 1))
+traindata<-ts(traindata,f=12,start = c(2009, 1))
 
 ggAcf(traindata)
 
 clean<- tsclean(logy)
-clean<-ts(clean,  f=12, start = c(2010, 1))
+clean<-ts(clean,  f=12, start = c(2009, 1))
 
 #plot the time series
 plot(y)
@@ -91,21 +91,6 @@ gghistogram(res) + ggtitle("Histogram of residuals")
 
 ggAcf(res) + ggtitle("ACF of naive residuals")
 
-f1 <- arima(logy, order = c(1,0,0))
-ggAcf(f1$residuals) + ggtitle("ACF of AR(1)")
-
-f2 <- arima(logy, order = c(0,1,0))
-ggAcf(f2$residuals) + ggtitle("ACF of Random Walk")
-
-f3 <- arima(logy, order = c(1,1,0))
-ggAcf(f3$residuals) + ggtitle("ACF of diff. AR(1)")
-
-f4 <- arima(logy, order = c(1,1,1))
-ggAcf(f4$residuals) + ggtitle("ACF of diff. AR(1),MA(1)")
-
-
-f5 <- arima(logy, order = c(1,0,2), seasonal = c(1,0,0))
-ggAcf(f5$residuals) + ggtitle("ACF of AR(1), MA(2) with seasonal AR(1)")
 
 auto.arima(logy)
 
@@ -119,7 +104,7 @@ summary(t5)
 
 
 tsdiag(t5, gof=24, tol = 0.1, col = "red", omit.initial = FALSE)
-ggAcf(t5$residuals)+ggtitle("ACF, seasonal AR(1), IOs, pulse AR(1) and step")
+ggAcf(t5$residuals)+ggtitle("ACF, seasonal AR(1), IOs, pulse AR(1) and step-function")
 gghistogram(t5$residuals) + ggtitle("Histogram of residuals")
 ##test for patterns in residuals
 shapiro.test(t5$residuals)
