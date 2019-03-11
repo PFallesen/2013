@@ -102,10 +102,11 @@ t5 <- arimax(logy, order = c(0,0,0), seasonal = c(1,0,0),
 
 summary(t5)
 
-
 tsdiag(t5, gof=24, tol = 0.1, col = "red", omit.initial = FALSE)
 ggAcf(t5$residuals)+ggtitle("ACF, seasonal AR(1), IOs, pulse AR(1) and step-function")
 gghistogram(t5$residuals) + ggtitle("Histogram of residuals")
+ggplot(t5$residuals, aes(x="Time", y="Standardized residuals")) + geom_point() 
+abline(h=0)
 ##test for patterns in residuals
 shapiro.test(t5$residuals)
 runs(t5$residuals)
