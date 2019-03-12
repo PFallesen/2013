@@ -72,18 +72,16 @@ ggAcf(traindata)
 clean<- tsclean(logy)
 clean<-ts(clean,  f=12, start = c(2009, 1))
 
+
 #plot the time series
-plot(y)
 plot(clean)
 pacf(clean)
-
 ggAcf(logy)
-
 plot(y=clean,x=zlag(clean),type='p')
 
 
 
-res <- residuals(naive(logy))
+res <- residuals(naive(clean))
 autoplot(res) + xlab("Month") + ylab("") +
   ggtitle("Residuals from naïve method")
 
@@ -92,7 +90,7 @@ gghistogram(res) + ggtitle("Histogram of residuals")
 ggAcf(res) + ggtitle("ACF of naive residuals")
 
 
-auto.arima(logy)
+auto.arima(clean)
 
 
 
@@ -105,8 +103,6 @@ summary(t5)
 tsdiag(t5, gof=24, tol = 0.1, col = "red", omit.initial = FALSE)
 ggAcf(t5$residuals)+ggtitle("ACF, seasonal AR(1), IOs, pulse AR(1) and step-function")
 gghistogram(t5$residuals) + ggtitle("Histogram of residuals")
-ggplot(t5$residuals, aes(x="Time", y="Standardized residuals")) + geom_point() 
-abline(h=0)
 ##test for patterns in residuals
 shapiro.test(t5$residuals)
 runs(t5$residuals)
