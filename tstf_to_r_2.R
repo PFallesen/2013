@@ -91,6 +91,17 @@ gghistogram(res) + ggtitle("Histogram of residuals")
 
 ggAcf(res) + ggtitle("ACF of naive residuals")
 
+t1 <- arimax(logy, order = c(0,0,0), seasonal = c(1,0,0),
+             io=c(55,73,108),
+             xtransf = mydata[,c("pulse")], transfer = list(c(1,0)))
+
+summary(t1)
+
+tsdiag(t1, gof=24, tol = 0.1, col = "red", omit.initial = FALSE)
+shapiro.test(t1$residuals)
+runs(t1$residuals)
+checkresiduals(t1)
+
 
 t5 <- arimax(logy, order = c(0,0,0), seasonal = c(1,0,0),
              io=c(55,73,108),
