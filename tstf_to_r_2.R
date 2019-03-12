@@ -64,24 +64,22 @@ mydata$logy <- ts(log((mydata$log_incident/mydata$V2)*100000),  f=12, start = c(
 newdata<-ts(mydata,start=1,f=12)
 
 traindata<-newdata[1:54,14:14]
-traindata<-tsclean(traindata)
 traindata<-ts(traindata,f=12,start = c(2009, 1))
 
 ggAcf(traindata)
 
-clean<- tsclean(logy)
-clean<-ts(clean,  f=12, start = c(2009, 1))
+
 
 
 #plot the time series
-plot(clean)
-pacf(clean)
+plot(logy)
+pacf(logy)
 ggAcf(logy)
-plot(y=clean,x=zlag(clean),type='p')
+plot(y=logy,x=zlag(logy),type='p')
 
 
 
-res <- residuals(naive(clean))
+res <- residuals(naive(logy))
 autoplot(res) + xlab("Month") + ylab("") +
   ggtitle("Residuals from naïve method")
 
@@ -90,7 +88,7 @@ gghistogram(res) + ggtitle("Histogram of residuals")
 ggAcf(res) + ggtitle("ACF of naive residuals")
 
 
-auto.arima(clean)
+auto.arima(logy)
 
 
 
