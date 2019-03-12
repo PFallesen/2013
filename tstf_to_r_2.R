@@ -1,5 +1,5 @@
 Paths = c("C:/Users/pf/Documents/2013")
-names(Paths) = c("pf")
+names(Paths) = c("pf@rff.dk")
 setwd(Paths[Sys.info()[7]])
 
 #install.packages(c("usethis"),dep=TRUE)
@@ -24,11 +24,6 @@ mydata <- read.dta("data_tstf_old.dta")
 
 #outliers
 
-mydata$out1 <- as.numeric(mydata$time == 163)
-mydata$out2 <- as.numeric(mydata$time == 181)
-mydata$out3 <- as.numeric(mydata$time == 164)
-mydata$out4 <- as.numeric(mydata$time == 165)
-mydata$out5 <- as.numeric(mydata$time == 85)
 
 marriage<-import("marriages.csv")
 marriage$year<-marriage$V1
@@ -47,10 +42,12 @@ total <- merge(mydata,marriage,by="year",all=TRUE)
 
 ##Limit sample to January, 2010 -- December, 2017
 
-mydata<-total[111:229,]
+mydata<-total[110:229,]
 
 ##Clean up
 rm(list=c("marriage","total"))
+
+write.csv2(mydata,file="sample.csv")
 
 #divorce rate measured as monthly divorce per 100,000 married couples mid year
 mydata$y<-(mydata$log_incident/mydata$V2)*100000
@@ -59,11 +56,12 @@ mydata$y<-(mydata$log_incident/mydata$V2)*100000
 y<-ts(mydata$y, f=12)
 logy <- log(mydata$y)
 logy <- ts(logy, frequency = 12, start = c(2009, 1))
+y <- ts(y, frequency = 12, start = c(2009, 1))
 mydata$logy <- ts(log((mydata$log_incident/mydata$V2)*100000),  f=12, start = c(2009, 1))
 
 newdata<-ts(mydata,start=1,f=12)
 
-traindata<-newdata[1:54,14:14]
+traindata<-newdata[1:54,9:9]
 traindata<-ts(traindata,f=12,start = c(2009, 1))
 
 ggAcf(traindata)
@@ -72,7 +70,13 @@ ggAcf(traindata)
 
 
 #plot the time series
-plot(logy)
+
+png(filename="timeseries.png", width = 10, height = 7, units = "in", pointsize = 14,
+    bg = "white",  res = 500,  type = c("windows"))
+  plot(y,xlab = "Year", ylab = "Monthly divorce per 100,000 marriages",lwd=2)
+  abline(v=2013.5,lwd=2,lty="dashed")
+  abline(v=2013.75,lwd=2,lty="dotted")
+dev.off()
 pacf(logy)
 ggAcf(logy)
 plot(y=logy,x=zlag(logy),type='p')
@@ -88,17 +92,16 @@ gghistogram(res) + ggtitle("Histogram of residuals")
 ggAcf(res) + ggtitle("ACF of naive residuals")
 
 
-auto.arima(logy)
-
-
-
 t5 <- arimax(logy, order = c(0,0,0), seasonal = c(1,0,0),
-             xreg = mydata[,c("out1", "out2")],io=c(107),
+             io=c(55,73,108),
              xtransf = mydata[,c("pulse","step")], transfer = list(c(1,0),c(0,0)))
 
 summary(t5)
 
+png(filename="diagnostic.png", width = 7, height = 7, units = "in", pointsize = 18,
+    bg = "white",  res = 500,  type = c("windows"))
 tsdiag(t5, gof=24, tol = 0.1, col = "red", omit.initial = FALSE)
+dev.off()
 ggAcf(t5$residuals)+ggtitle("ACF, seasonal AR(1), IOs, pulse AR(1) and step-function")
 gghistogram(t5$residuals) + ggtitle("Histogram of residuals")
 ##test for patterns in residuals
@@ -130,10 +133,8 @@ dev.off()
 fcast<-forecast(Arima(traindata,order = c(0,0,0),seasonal = c(1,0,0)),h=66)
 summary(fcast)
 plot(fcast,xlab = "Year", ylab = "Monthly divorce per 100,000 marriages", ylim=c(3.7,5.7),lwd=2)
-lines(logy,lwd=3)
 points(fitted(t5),pch=19,cex=1.5)
-lines(clean,col="red",lw=2)
-points(fitted(t5c),pch=18,col="red",cex=1.25)
+
 
 
 ##Assuming no step
