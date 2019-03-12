@@ -72,8 +72,8 @@ ggAcf(traindata)
 #plot the time series
 
 png(filename="timeseries.png", width = 10, height = 7, units = "in", pointsize = 14,
-    bg = "white",  res = 500,  type = c("windows"))
-  plot(y,xlab = "Year", ylab = "Monthly divorce per 100,000 marriages",lwd=2)
+    bg = "white",  res = 250,  type = c("windows"))
+  plot(y,xlab = "Year", ylab = "Monthly divorces per 100,000 marriages",lwd=2)
   abline(v=2013.5,lwd=2,lty="dashed")
   abline(v=2013.75,lwd=2,lty="dotted")
 dev.off()
