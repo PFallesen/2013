@@ -34,9 +34,9 @@ attach(bevc3)
 bevc3$year<-substr(TID,1,4)
 bevc3$month<-substr(TID,6,7)
 
-##Limit sample to January, 2009 -- December, 2018
+##Limit sample to January, 2007 -- December, 2018
 
-data<-subset(bevc3,BEVÆGELSEV=="Divorces" & year>2008 & year < 2019,select=c("INDHOLD","year","month"))
+data<-subset(bevc3,BEVÆGELSEV=="Divorces" & year>2006 & year < 2019,select=c("INDHOLD","year","month"))
 detach(bevc3)
 
 data<-data[order(data$year,data$month),]
@@ -60,8 +60,8 @@ variable_overview <- variables %>%
 
 variable_overview
 
-##Retrieve number of mariages at start of year 2009-2019
-data<-retrieve_data("FAM44N",Tid = "2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019",
+##Retrieve number of mariages at start of year 2007-2019
+data<-retrieve_data("FAM44N",Tid = "2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019",
                     OMRÅDE="000",
                     FAMTYP="PARF")
 
@@ -70,7 +70,7 @@ marr<-aggregate(data$INDHOLD, by = list(trt = data$TID), FUN=sum)
 
 ##Build rolling mean of number of marriages using two adjacent years
 mean<-rollmean(marr$x, 2, align="left")
-year <-2009:2018
+year <-2007:2018
 marriages<-data.frame(year,mean)
 
 
@@ -98,15 +98,15 @@ mydata$y<-(mydata$incident/mydata$mean)*100000
 #Log and time series set the data
 y<-ts(mydata$y, f=12)
 logy <- log(mydata$y)
-logy <- ts(logy, frequency = 12, start = c(2009, 1))
-y <- ts(y, frequency = 12, start = c(2009, 1))
-mydata$logy <- ts(log(mydata$y),  f=12, start = c(2009, 1))
+logy <- ts(logy, frequency = 12, start = c(2007, 1))
+y <- ts(y, frequency = 12, start = c(2007, 1))
+mydata$logy <- ts(log(mydata$y),  f=12, start = c(2007, 1))
 
 newdata<-ts(mydata,start=1,f=12)
 
 ##Build training set used for forcasting
-traindata<-newdata[1:54,8:8]
-traindata<-ts(traindata,f=12,start = c(2009, 1))
+traindata<-newdata[1:78,9:9]
+traindata<-ts(traindata,f=12,start = c(2007, 1))
 
 #Examine nature of training set (Seasonal AR[1])
 ggAcf(traindata)
@@ -116,7 +116,7 @@ ggAcf(traindata)
 
 #plot the time series
 
-png(filename="timeseries.png", width = 10, height = 7, units = "in", pointsize = 14,
+png(filename="timeseries.png", width = 10, height = 8, units = "in", pointsize = 14,
     bg = "white",  res = 250,  type = c("windows"))
   plot(y,xlab = "Year", ylab = "Monthly divorces per 100,000 marriages",lwd=2)
   abline(v=2013.5,lwd=2,lty="dashed")
@@ -143,14 +143,14 @@ ggAcf(res) + ggtitle("ACF of naive residuals")
 
 #Run ITSD model without step-increase in divorce risk
 t1 <- arimax(logy, order = c(0,0,0), seasonal = c(1,0,0),
-             io=c(55,73,108),
+             io=c(79,97,132),
              xtransf = mydata[,c("pulse")], transfer = list(c(1,0)))
 
 summary(t1)
 
 png(filename="diagnostic_t1.png", width = 5, height = 10, units = "in", pointsize = 18,
     bg = "white",  res = 250,  type = c("windows"))
-tsdiag(t1, gof=24, tol = 0.5, col = "red", omit.initial = FALSE)
+tsdiag(t1, gof=24, tol = 0.1, col = "red", omit.initial = FALSE)
 dev.off()
 shapiro.test(t1$residuals)
 runs(t1$residuals)
@@ -160,14 +160,14 @@ checkresiduals(t1)
 
 
 t5 <- arimax(logy, order = c(0,0,0), seasonal = c(1,0,0),
-             io=c(55,73,108),
+             io=c(79,97,132),
              xtransf = mydata[,c("pulse","step")], transfer = list(c(1,0),c(0,0)))
 
 summary(t5)
 
 png(filename="diagnostic_t5.png", width = 5, height = 10, units = "in", pointsize = 18,
     bg = "white",  res = 250,  type = c("windows"))
-tsdiag(t5, gof=24, tol = 0.5, col = "red", omit.initial = TRUE)
+tsdiag(t5, gof=24, tol = 0.1, col = "red", omit.initial = TRUE)
 dev.off()
 ggAcf(t5$residuals)+ggtitle("ACF, seasonal AR(1), IOs, pulse AR(1) and step-function")
 gghistogram(t5$residuals) + ggtitle("Histogram of residuals")
@@ -176,7 +176,7 @@ shapiro.test(t5$residuals)
 runs(t5$residuals)
 
 #Additional residual check outside scope of Box-Ljung
-checkresiduals(t1,lag=24)
+checkresiduals(t5,lag=24)
 
 
 
@@ -201,43 +201,7 @@ runs(train$residuals)
 dev.off()
 fcast<-forecast(Arima(traindata,order = c(0,0,0),seasonal = c(1,0,0)),h=66)
 summary(fcast)
-plot(fcast,xlab = "Year", ylab = "Monthly divorce per 100,000 marriages", ylim=c(3.7,5.7),lwd=2)
+plot(logy,xlab = "Year", ylab = "Monthly divorce per 100,000 marriages", ylim=c(3.7,5.7),lwd=2)
 points(fitted(t5),pch=19,cex=1.5)
-
-
-
-##Assuming no step
-
-txc <- arimax(logy, order = c(0,0,0), seasonal = c(1,0,0),
-              xreg = mydata[,c("out1", "out2")],
-              xtransf = mydata[,c("pulse")], 
-              transfer = list(c(1,0)))
-summary(txc)
-shapiro.test(txc$residuals)
-runs(txc$residuals)
-checkresiduals(txc,gof=24)
-detectIO(txc)
-detectAO(txc)
-
-plot(logy,lwd=3)
-points(fitted(txc),pch=19,cex=1.5)
-points(fitted(t5),pch=19,cex=1.5,col="blue")
-
-
-##Assuming AR(1) step
-
-tx2 <- arimax(logy, order = c(0,0,0), seasonal = c(1,0,0),
-              xreg = mydata[,c("out1", "out2")],
-              xtransf = mydata[,c("pulse")], 
-              transfer = list(c(1,0)))
-summary(tx2)
-shapiro.test(txc$residuals)
-runs(txc$residuals)
-checkresiduals(txc,gof=24)
-detectIO(txc)
-detectAO(txc)
-
-plot(logy,lwd=3)
-points(fitted(txc),pch=19,cex=1.5)
-points(fitted(t5),pch=19,cex=1.5,col="blue")
+points(fitted(t1),pch=17,cex=1.5)
 
