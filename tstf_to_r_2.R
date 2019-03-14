@@ -131,7 +131,7 @@ ggAcf(logy)
 plot(y=logy,x=zlag(logy),type='p')
 
 
-##Rune naïve model for comparison
+##Run naïve model for comparison
 res <- residuals(naive(logy))
 autoplot(res) + xlab("Month") + ylab("") +
   ggtitle("Residuals from naïve method")
