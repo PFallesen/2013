@@ -6,8 +6,6 @@ setwd(Paths[Sys.info()[7]])
 #install.packages('tseries',dep=TRUE)
 #install.packages('rio',dep=TRUE)
 
-
-
 rm(list=ls())
 
 library(usethis)
@@ -24,7 +22,7 @@ library(rio)
 library(zoo)
 library(statsDK)
 library(tidyverse)
-library(ggfortify)
+
 
 
 #Pull in monthly divorces through API for Statistics Denmark's public database
