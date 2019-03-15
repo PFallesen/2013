@@ -6,8 +6,6 @@ setwd(Paths[Sys.info()[7]])
 #install.packages('tseries',dep=TRUE)
 #install.packages('rio',dep=TRUE)
 
-
-
 rm(list=ls())
 
 library(usethis)
@@ -24,7 +22,7 @@ library(rio)
 library(zoo)
 library(statsDK)
 library(tidyverse)
-library(ggfortify)
+
 
 
 #Pull in monthly divorces through API for Statistics Denmark's public database
@@ -131,7 +129,7 @@ ggAcf(logy)
 plot(y=logy,x=zlag(logy),type='p')
 
 
-##Rune naïve model for comparison
+##Run naïve model for comparison
 res <- residuals(naive(logy))
 autoplot(res) + xlab("Month") + ylab("") +
   ggtitle("Residuals from naïve method")
