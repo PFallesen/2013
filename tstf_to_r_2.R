@@ -22,7 +22,31 @@ library(rio)
 library(zoo)
 library(statsDK)
 library(tidyverse)
+library(taRifx)
 
+##Draw in the unmarried population
+folk1a_info<-retrieve_metadata("FOLK1A")
+glimpse(folk1a_info)
+variables <- get_variables(folk1a_info)
+glimpse(variables)
+
+variable_overview <- variables %>% 
+  group_by(param) %>%
+  slice(c(1,round(n()/2), n())) %>%
+  ungroup()
+
+variable_overview
+
+
+unmarried<-retrieve_data("FOLK1A",
+              OMRÅDE="000",CIVILSTAND="U,E,F",ALDER="*")
+
+unmarried$alder<-destring(unmarried$ALDER, keep = "0-9.-")
+unmarried<-subset(unmarried,KØN=="Total" & alder > 17)
+temp_x<-aggregate(unmarried$INDHOLD, by = list(trt = unmarried$TID), FUN=sum)
+temp_x$Q<-substring(temp_x$trt,5,6)
+temp_x$year<-substring(temp_x$trt,1,4)
+unmarried<-subset(temp_x,Q=="Q1" & year < 2019,select=c("year","x"))
 
 
 #Pull in monthly divorces through API for Statistics Denmark's public database
@@ -35,10 +59,32 @@ bevc3$month<-substr(TID,6,7)
 ##Limit sample to January, 2007 -- December, 2018
 
 data<-subset(bevc3,BEVÆGELSEV=="Divorces" & year>2006 & year < 2019,select=c("INDHOLD","year","month"))
+marriage_rate<-subset(bevc3,BEVÆGELSEV=="Marriages" & year>2006 & year < 2019,select=c("INDHOLD","year","month"))
+
 detach(bevc3)
+
+marriage_rate<-marriage_rate[order(data$year,data$month),]
+marriage_rate<-merge(marriage_rate,unmarried,by="year")
+marriage_rate$INDHOLD=50000*marriage_rate$INDHOLD/marriage_rate$x
+marriage_ts<-ts(marriage_rate$INDHOLD,  f=12, start = c(2008, 1))
+
+
+
+#plot the time series
+
+png(filename="marriage_timeseries.png", width = 10, height = 8, units = "in", pointsize = 14,
+    bg = "white",  res = 250,  type = c("windows"))
+plot(marriage_ts,xlab = "Year", ylab = "Monthly marriages per 100,000 unmarried dyads",lwd=2)
+abline(v=2013.5,lwd=2,lty="dashed")
+abline(v=2013.75,lwd=2,lty="dotted")
+dev.off()
+
+
 
 data<-data[order(data$year,data$month),]
 mydata<-subset(data,select=c("year","month"))
+
+
 
 ##Data now include year, month, and number of divorces
 mydata$incident<-data$INDHOLD
@@ -203,3 +249,20 @@ plot(logy,xlab = "Year", ylab = "Monthly divorce per 100,000 marriages", ylim=c(
 points(fitted(t5),pch=19,cex=1.5)
 points(fitted(t1),pch=17,cex=1.5)
 
+##Testing marriage
+
+t_m <- arimax(marriage_ts, order = c(0,0,0), seasonal = c(1,0,0),
+             io=c(79,97,132),
+             xtransf = mydata[,c("pulse[13:144]","step[13:144]")], transfer = list(c(1,0),c(0,0)))
+
+t_m <- arimax(marriage_ts, order = c(0,0,0), seasonal = c(1,0,0),
+              xtransf = mydata[,c("pulse","step")], transfer = list(c(1,0),c(0,0)))
+
+t_m <- arimax(marriage_ts, order = c(2,1,1), seasonal = c(2,1,0),
+              xtransf = mydata[,c("pulse","step")], transfer = list(c(1,0),c(0,0)))
+
+t_m <- arimax(marriage_ts, order = c(2,1,1), seasonal = c(2,1,0))
+              
+summary(t_m)
+tsdiag(t_m)
+checkresiduals(t_m)
