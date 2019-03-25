@@ -98,7 +98,7 @@ marriage_ts<-ts(marriage_rate$INDHOLD,  f=12, start = c(2007, 1))
 
 #plot the time series
 
-png(filename="marriage_timeseries.png", width = 10, height = 8, units = "in", pointsize = 14,
+png(filename="marriage_timeseries.png", width = 10, height = 6, units = "in", pointsize = 14,
     bg = "white",  res = 250,  type = c("windows"))
 plot(marriage_ts,xlab = "Year", ylab = "Monthly marriages per 100,000 unmarried dyads",lwd=2)
 abline(v=2013.5,lwd=2,lty="dashed")
@@ -186,7 +186,7 @@ ggAcf(traindata)
 
 #plot the time series
 
-png(filename="timeseries.png", width = 10, height = 8, units = "in", pointsize = 14,
+png(filename="timeseries.png", width = 10, height = 6, units = "in", pointsize = 14,
     bg = "white",  res = 250,  type = c("windows"))
   plot(y,xlab = "Year", ylab = "Monthly divorces per 100,000 marriages",lwd=2, ylim=c(40,320))
   abline(v=2013.5,lwd=2,lty="dashed")
@@ -257,6 +257,18 @@ points(fitted(t1),pch=17,cex=1)
 
 
 
+##Union dissolutions
+
+dissolution<-read_dta("dissolution.dta")
+diss_ts<-ts(dissolution$count*100000/dissolution$sum,f=12,start = c(2007, 1))
+plot(diss_ts)
+
+png(filename="dissolution.png", width = 10, height = 6, units = "in", pointsize = 14,
+    bg = "white",  res = 250,  type = c("windows"))
+plot(diss_ts,xlab = "Year", ylab = "Monthly dissolution per 100,000 unmarried unions",lwd=2, ylim=c(400,1600),xlim=c(2007,2019))
+abline(v=2013.5,lwd=2,lty="dashed")
+abline(v=2013.75,lwd=2,lty="dotted")
+dev.off()
 
 #play
 
