@@ -5,9 +5,10 @@ setwd(Paths[Sys.info()[7]])
 #install.packages(c("usethis"),dep=TRUE)
 #install.packages('tseries',dep=TRUE)
 #install.packages('rio',dep=TRUE)
+#install.packages('taRifx',dep=TRUE)
 
 rm(list=ls())
-
+library(plyr)
 library(usethis)
 library(stats)
 library(foreign)
@@ -23,6 +24,7 @@ library(zoo)
 library(statsDK)
 library(tidyverse)
 library(taRifx)
+
 
 ##Draw in the unmarried population
 folk1a_info<-retrieve_metadata("FOLK1A")
@@ -49,6 +51,30 @@ temp_x$year<-substring(temp_x$trt,1,4)
 unmarried<-subset(temp_x,Q=="Q1" & year < 2019,select=c("year","x"))
 
 
+
+##Draw in the unmarried population fro 2007
+bef1a07_info<-retrieve_metadata("BEF1A07")
+glimpse(bef1a07_info)
+variables <- get_variables(bef1a07_info)
+glimpse(variables)
+
+variable_overview <- variables %>% 
+  group_by(param) %>%
+  slice(c(1,round(n()/2), n())) %>%
+  ungroup()
+
+variable_overview
+
+unmarried2007<-retrieve_data("BEF1A07", 
+                         CIVILSTAND="U,E,F,L,O",ALDER="*",TID="2007",KOEN="*")
+unmarried2007$alder<-destring(unmarried2007$ALDER, keep = "0-9.-")
+unmarried2007<-subset(unmarried2007,OMRÅDE=="All Denmark" & alder > 17 & TID ==2007)
+temp_x<-aggregate(unmarried2007$INDHOLD, by = list(trt = unmarried2007$TID), FUN=sum)
+names(temp_x)[names(temp_x)=="trt"] <- "year"
+
+unmarried <- rbind.fill(temp_x,unmarried)
+
+
 #Pull in monthly divorces through API for Statistics Denmark's public database
 
 bevc3 <- retrieve_data("BEV3C",lang="en")
@@ -66,7 +92,7 @@ detach(bevc3)
 marriage_rate<-marriage_rate[order(data$year,data$month),]
 marriage_rate<-merge(marriage_rate,unmarried,by="year")
 marriage_rate$INDHOLD=50000*marriage_rate$INDHOLD/marriage_rate$x
-marriage_ts<-ts(marriage_rate$INDHOLD,  f=12, start = c(2008, 1))
+marriage_ts<-ts(marriage_rate$INDHOLD,  f=12, start = c(2007, 1))
 
 
 
