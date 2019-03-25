@@ -25,6 +25,9 @@ library(statsDK)
 library(tidyverse)
 library(taRifx)
 
+##Margins for plot
+
+
 
 ##Draw in the unmarried population
 folk1a_info<-retrieve_metadata("FOLK1A")
@@ -98,8 +101,9 @@ marriage_ts<-ts(marriage_rate$INDHOLD,  f=12, start = c(2007, 1))
 
 #plot the time series
 
-png(filename="marriage_timeseries.png", width = 10, height = 6, units = "in", pointsize = 14,
+png(filename="marriage_timeseries.png", width = 10, height = 5, units = "in", pointsize = 14,
     bg = "white",  res = 250,  type = c("windows"))
+par(mai=c(.9,.95,0.2,0.42))
 plot(marriage_ts,xlab = "Year", ylab = "Monthly marriages per 100,000 unmarried dyads",lwd=2)
 abline(v=2013.5,lwd=2,lty="dashed")
 abline(v=2013.75,lwd=2,lty="dotted")
@@ -186,8 +190,9 @@ ggAcf(traindata)
 
 #plot the time series
 
-png(filename="timeseries.png", width = 10, height = 6, units = "in", pointsize = 14,
+png(filename="timeseries.png", width = 10, height = 5, units = "in", pointsize = 14,
     bg = "white",  res = 250,  type = c("windows"))
+  par(mai=c(.9,.95,0.2,0.42))
   plot(y,xlab = "Year", ylab = "Monthly divorces per 100,000 marriages",lwd=2, ylim=c(40,320))
   abline(v=2013.5,lwd=2,lty="dashed")
   abline(v=2013.75,lwd=2,lty="dotted")
@@ -265,6 +270,7 @@ plot(diss_ts)
 
 png(filename="dissolution.png", width = 10, height = 6, units = "in", pointsize = 14,
     bg = "white",  res = 250,  type = c("windows"))
+par(mai=c(.9,.95,0.2,0.42))
 plot(diss_ts,xlab = "Year", ylab = "Monthly dissolution per 100,000 unmarried unions",lwd=2, ylim=c(400,1600),xlim=c(2007,2019))
 abline(v=2013.5,lwd=2,lty="dashed")
 abline(v=2013.75,lwd=2,lty="dotted")
