@@ -268,7 +268,7 @@ dissolution<-read_dta("dissolution.dta")
 diss_ts<-ts(dissolution$count*100000/dissolution$sum,f=12,start = c(2007, 1))
 plot(diss_ts)
 
-png(filename="dissolution.png", width = 10, height = 6, units = "in", pointsize = 14,
+png(filename="dissolution.png", width = 10, height = 5, units = "in", pointsize = 14,
     bg = "white",  res = 250,  type = c("windows"))
 par(mai=c(.9,.95,0.2,0.42))
 plot(diss_ts,xlab = "Year", ylab = "Monthly dissolution per 100,000 unmarried unions",lwd=2, ylim=c(400,1600),xlim=c(2007,2019))
