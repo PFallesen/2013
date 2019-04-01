@@ -295,12 +295,19 @@ checkresiduals(train)
 shapiro.test(train$residuals)
 runs(train$residuals)
 
-dev.off()
 fcast<-forecast(Arima(traindata,order = c(0,0,0),seasonal = c(1,0,0)),h=66)
 summary(fcast)
-plot(logy,xlab = "Year", ylab = "Monthly divorce per 100,000 marriages", ylim=c(3.7,5.7),lwd=2)
-points(fitted(t5),pch=19,cex=1.5)
-points(fitted(t1),pch=17,cex=1.5)
+png(filename="forecast.png", width = 10, height = 5, units = "in", pointsize = 14,
+    bg = "white",  res = 250,  type = c("windows"))
+par(mai=c(1,1,0.4,0.4))
+plot(fcast, xlab = "Year", ylab = "ln(Monthly divorces per 100,000 marriages)", ylim=c(3.7,5.7),lwd=2,
+     main="Forecast from stationary model compared to ITSD predictions",cex=1.2)
+points(fitted(t5),pch=19,cex=.9,col="orange")
+lines(logy,col="orange",lty="dashed",lwd=1)
+legend(2006.75,4,"Prediction from ITSD model",
+       pch=20,box.col="white",col="orange",cex=1.2)
+dev.off()
+
 
 ##Testing marriage
 
