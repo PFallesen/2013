@@ -285,37 +285,3 @@ abline(v=2013.5,lwd=2,lty="dashed")
 abline(v=2013.75,lwd=2,lty="dotted")
 dev.off()
 
-#play
-
-##Forecasting off cleaned data-set pre-pulse
-
-train<- Arima(traindata,order = c(0,0,0),seasonal = c(1,0,0))
-summary(train)
-checkresiduals(train)
-shapiro.test(train$residuals)
-runs(train$residuals)
-
-dev.off()
-fcast<-forecast(Arima(traindata,order = c(0,0,0),seasonal = c(1,0,0)),h=66)
-summary(fcast)
-plot(logy,xlab = "Year", ylab = "Monthly divorce per 100,000 marriages", ylim=c(3.7,5.7),lwd=2)
-points(fitted(t5),pch=19,cex=1.5)
-points(fitted(t1),pch=17,cex=1.5)
-
-##Testing marriage
-
-t_m <- arimax(marriage_ts, order = c(0,0,0), seasonal = c(1,0,0),
-             io=c(79,97,132),
-             xtransf = mydata[,c("pulse[13:144]","step[13:144]")], transfer = list(c(1,0),c(0,0)))
-
-t_m <- arimax(marriage_ts, order = c(0,0,0), seasonal = c(1,0,0),
-              xtransf = mydata[,c("pulse","step")], transfer = list(c(1,0),c(0,0)))
-
-t_m <- arimax(marriage_ts, order = c(2,1,1), seasonal = c(2,1,0),
-              xtransf = mydata[,c("pulse","step")], transfer = list(c(1,0),c(0,0)))
-
-t_m <- arimax(marriage_ts, order = c(2,1,1), seasonal = c(2,1,0))
-              
-summary(t_m)
-tsdiag(t_m)
-checkresiduals(t_m)
