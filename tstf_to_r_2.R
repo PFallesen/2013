@@ -6,6 +6,7 @@ setwd(Paths[Sys.info()[7]])
 #install.packages('tseries',dep=TRUE)
 #install.packages('rio',dep=TRUE)
 #install.packages('taRifx',dep=TRUE)
+#install.packages('qpcR',dep=TRUE)
 
 rm(list=ls())
 library(plyr)
@@ -24,6 +25,7 @@ library(zoo)
 library(statsDK)
 library(tidyverse)
 library(taRifx)
+library(qpcR)
 
 ##Margins for plot
 
@@ -224,6 +226,14 @@ gghistogram(res) + ggtitle("Histogram of residuals")
 
 ggAcf(res) + ggtitle("ACF of naive residuals")
 
+##code to obtain AICc
+aicc = function(model){
+  n = model$nobs
+  p = length(model$coef)
+  aicc = model$aic + 2*p*(p+1)/(n-p-1)
+  return(aicc)
+}
+
 
 #Run ITSD model without step-increase in divorce risk
 t1 <- arimax(logy, order = c(0,0,0), seasonal = c(1,0,0),
@@ -241,7 +251,10 @@ runs(t1$residuals)
 
 #Additional residual check outside scope of Box-Ljung
 checkresiduals(t1)
-
+bic1=AIC(t1,k = log(length(logy)))
+bic1
+aicc1<-AICc(t1)
+aicc1
 
 t5 <- arimax(logy, order = c(0,0,0), seasonal = c(1,0,0),
              io=c(79,97,132),
@@ -261,8 +274,10 @@ runs(t5$residuals)
 
 #Additional residual check outside scope of Box-Ljung
 checkresiduals(t5,lag=24)
-
-
+bic5=AIC(t5,k = log(length(logy)))
+bic5
+aicc5<-AICc(t5)
+aicc5
 
 dev.off()
 plot(logy,lwd=2)
