@@ -26,6 +26,7 @@ library(statsDK)
 library(tidyverse)
 library(taRifx)
 library(qpcR)
+library(lmtest)
 
 ##Margins for plot
 
@@ -218,6 +219,7 @@ plot(y=logy,x=zlag(logy),type='p')
 
 
 ##Run naïve model for comparison
+naive(logy)
 res <- residuals(naive(logy))
 autoplot(res) + xlab("Month") + ylab("") +
   ggtitle("Residuals from naïve method")
@@ -226,16 +228,27 @@ gghistogram(res) + ggtitle("Histogram of residuals")
 
 ggAcf(res) + ggtitle("ACF of naive residuals")
 
-##code to obtain AICc
-aicc = function(model){
-  n = model$nobs
-  p = length(model$coef)
-  aicc = model$aic + 2*p*(p+1)/(n-p-1)
-  return(aicc)
-}
+
+#Run no-intervention model to address reviewer comment R2.c
+#Model 0 in paper
+t0 <- arimax(logy, order = c(0,0,0), seasonal = c(1,0,0),
+             io=c(79,97,132))
+
+summary(t0)
+
+shapiro.test(t0$residuals)
+runs(t0$residuals)
+
+#Additional residual check outside scope of Box-Ljung
+checkresiduals(t0)
+
+aicc0<-AICc(t0)
+aicc0
+
 
 
 #Run ITSD model without step-increase in divorce risk
+#Model 1 in paper
 t1 <- arimax(logy, order = c(0,0,0), seasonal = c(1,0,0),
              io=c(79,97,132),
              xtransf = mydata[,c("pulse")], transfer = list(c(1,0)))
@@ -256,6 +269,8 @@ checkresiduals(t1)
 aicc1<-AICc(t1)
 aicc1
 
+#Run ITSD model with step-increase in divorce risk
+#Model 2 in paper
 t5 <- arimax(logy, order = c(0,0,0), seasonal = c(1,0,0),
              io=c(79,97,132),
              xtransf = mydata[,c("pulse","step")], transfer = list(c(1,0),c(0,0)))
@@ -285,6 +300,9 @@ points(fitted(t5),pch=19,cex=1)
 points(fitted(t1),pch=17,cex=1)
 
 
+
+##Testing models
+lrtest(t5,t1)
 
 ##Union dissolutions
 
