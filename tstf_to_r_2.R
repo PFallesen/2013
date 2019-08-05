@@ -251,6 +251,8 @@ runs(t1$residuals)
 
 #Additional residual check outside scope of Box-Ljung
 checkresiduals(t1)
+
+#Corrected AIC
 aicc1<-AICc(t1)
 aicc1
 
@@ -272,6 +274,8 @@ runs(t5$residuals)
 
 #Additional residual check outside scope of Box-Ljung
 checkresiduals(t5,lag=24)
+
+#Corrected AIC
 aicc5<-AICc(t5)
 aicc5
 
