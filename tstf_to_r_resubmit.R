@@ -163,6 +163,7 @@ mydata$pulse <- as.numeric(mydata$year == 2013 & mydata$month==10)
 
 mydata$step <- as.numeric((mydata$year >= 2013 & mydata$month>=10) |(mydata$year >= 2014) )
 
+mydata$running <- 1:nrow(mydata)
 
 #Combine TS-data with denominator dataset
 mydata <- merge(mydata,marriages,by="year",all=TRUE)
@@ -315,3 +316,19 @@ plot(diss_ts,xlab = "Year", ylab = "Monthly dissolution per 100,000 unmarried un
 abline(v=2013.5,lwd=2,lty="dashed")
 abline(v=2013.75,lwd=2,lty="dotted")
 dev.off()
+
+
+mydata$running2<- mydata$running^2
+#Run ITSD model with step-increase in divorce risk
+#Model 2 in paper
+t6 <- arimax(logy, order = c(0,0,0), seasonal = c(1,0,0),
+             io=c(79,97,132), xreg=mydata[,c("running")],
+             xtransf = mydata[,c("pulse","step")], transfer = list(c(1,0),c(0,0)))
+aicc6<-AICc(t6)
+aicc6
+summary(t6)
+tsdiag(t6, gof=24, tol = 0.1, col = "red", omit.initial = TRUE)
+
+shapiro.test(t6$residuals)
+runs(t6$residuals)
+checkresiduals(t6,lag=24)
