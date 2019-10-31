@@ -321,8 +321,8 @@ dev.off()
 mydata$running2<- mydata$running^2
 #Run ITSD model with step-increase in divorce risk
 #Model 2 in paper
-t6 <- arimax(logy, order = c(0,0,0), seasonal = c(1,0,0),
-             io=c(79,97,132), xreg=mydata[,c("running")],
+t6 <- arimax(logy, order = c(0,1,1), seasonal = c(1,0,0),
+             io=c(79,97,132),
              xtransf = mydata[,c("pulse","step")], transfer = list(c(1,0),c(0,0)))
 aicc6<-AICc(t6)
 aicc6
