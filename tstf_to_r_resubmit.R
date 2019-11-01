@@ -12,7 +12,6 @@ library(plyr)
 library(usethis)
 library(stats)
 library(foreign)
-library(TSA) #Cryer & Chen 
 library(car)
 library(aod)
 library(forecast)
@@ -26,6 +25,7 @@ library(tidyverse)
 library(taRifx)
 library(qpcR)
 library(lmtest)
+library(TSA) #Cryer & Chen 
 
 ##Margins for plot
 
@@ -164,7 +164,6 @@ mydata$pulse <- as.numeric(mydata$year == 2013 & mydata$month==10)
 
 mydata$step <- as.numeric((mydata$year >= 2013 & mydata$month>=10) |(mydata$year >= 2014) )
 
-mydata$running <- 1:nrow(mydata)
 
 #Combine TS-data with denominator dataset
 mydata <- merge(mydata,marriages,by="year",all=TRUE)
@@ -238,6 +237,7 @@ summary(t0)
 
 shapiro.test(t0$residuals)
 runs(t0$residuals)
+adf.test(t0$residuals)
 
 #Additional residual check outside scope of Box-Ljung
 checkresiduals(t0)
@@ -295,9 +295,7 @@ aicc5<-AICc(t5)
 aicc5
 
 dev.off()
-plot(logy,lwd=2)
-points(fitted(t5),pch=19,cex=1)
-points(fitted(t1),pch=17,cex=1)
+
 
 
 
@@ -319,7 +317,7 @@ abline(v=2013.75,lwd=2,lty="dotted")
 dev.off()
 
 
-mydata$running2<- mydata$running^2
+
 #Run ITSD model with step-increase in divorce risk
 #Model 2 in paper
 t6 <- arimax(logy, order = c(0,1,1), seasonal = c(1,0,0),
@@ -333,3 +331,15 @@ tsdiag(t6, gof=24, tol = 0.1, col = "red", omit.initial = TRUE)
 shapiro.test(t6$residuals)
 runs(t6$residuals)
 checkresiduals(t6,lag=24)
+
+t7 <- arimax(logy, order = c(0,0,0), seasonal = c(1,0,0),
+             io=c(79,97,132),
+             xtransf = mydata[,c("pulse","step")], transfer = list(c(1,0),c(0,0)))
+aicc7<-AICc(t7)
+aicc7
+summary(t7)
+tsdiag(t7, gof=24, tol = 0.1, col = "red", omit.initial = TRUE)
+
+shapiro.test(t7$residuals)
+runs(t7$residuals)
+checkresiduals(t7,lag=24)
