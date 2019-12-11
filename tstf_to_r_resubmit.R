@@ -1,12 +1,13 @@
 
 
-install.packages(c("usethis"),dep=TRUE)
-install.packages('tseries',dep=TRUE)
-install.packages('rio',dep=TRUE)
-install.packages('taRifx',dep=TRUE)
-install.packages('qpcR',dep=TRUE)
-install.packages(c("TSA","car","aod","forecast","statsDK","tidyverse","lmtest"),dep=TRUE)
-install.packages("Rtools",dep=TRUE)
+#install.packages(c("usethis"),dep=TRUE)
+#install.packages('tseries',dep=TRUE)
+#install.packages('rio',dep=TRUE)
+#install.packages('taRifx',dep=TRUE)
+#install.packages('qpcR',dep=TRUE)
+#install.packages(c("TSA","car","aod","forecast","statsDK","tidyverse","lmtest"),dep=TRUE)
+#install.packages("Rtools",dep=TRUE)
+#install.packages("statsDK",dep=TRUE)
 rm(list=ls())
 library(plyr)
 library(usethis)
@@ -164,6 +165,9 @@ mydata$pulse <- as.numeric(mydata$year == 2013 & mydata$month==10)
 
 mydata$step <- as.numeric((mydata$year >= 2013 & mydata$month>=10) |(mydata$year >= 2014) )
 
+mydata$p98 <- as.numeric(mydata$x == 98)
+mydata$p133 <- as.numeric(mydata$x==133)
+
 
 #Combine TS-data with denominator dataset
 mydata <- merge(mydata,marriages,by="year",all=TRUE)
@@ -318,11 +322,12 @@ dev.off()
 
 
 
-#Run ITSD model with step-increase in divorce risk
+#Run ITSD model with differencing and MA(1
 #Model 2 in paper
 t6 <- arimax(logy, order = c(0,1,1), seasonal = c(1,0,0),
              io=c(79,97,132),
-             xtransf = mydata[,c("pulse","step")], transfer = list(c(1,0),c(0,0)))
+             xtransf = mydata[,c("pulse","step")
+                              ], transfer = list(c(1,0),c(0,0)))
 aicc6<-AICc(t6)
 aicc6
 summary(t6)
@@ -331,15 +336,22 @@ tsdiag(t6, gof=24, tol = 0.1, col = "red", omit.initial = TRUE)
 shapiro.test(t6$residuals)
 runs(t6$residuals)
 checkresiduals(t6,lag=24)
+adf.test(t6$residuals)
 
-t7 <- arimax(logy, order = c(0,0,0), seasonal = c(1,0,0),
+
+
+#Run ITSD model with differencing and MA(1) an Pulse effect after AO
+#Model 2 in paper
+t6 <- arimax(logy, order = c(0,1,1), seasonal = c(1,0,0),
              io=c(79,97,132),
-             xtransf = mydata[,c("pulse","step")], transfer = list(c(1,0),c(0,0)))
-aicc7<-AICc(t7)
-aicc7
-summary(t7)
-tsdiag(t7, gof=24, tol = 0.1, col = "red", omit.initial = TRUE)
+             xtransf = mydata[,c("pulse","step")
+                              ], transfer = list(c(1,0),c(0,0)))
+aicc6<-AICc(t6)
+aicc6
+summary(t6)
+tsdiag(t6, gof=24, tol = 0.1, col = "red", omit.initial = TRUE)
 
-shapiro.test(t7$residuals)
-runs(t7$residuals)
-checkresiduals(t7,lag=24)
+shapiro.test(t6$residuals)
+runs(t6$residuals)
+checkresiduals(t6,lag=24)
+adf.test(t6$residuals)
