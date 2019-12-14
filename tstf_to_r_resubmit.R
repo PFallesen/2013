@@ -8,6 +8,7 @@
 #install.packages(c("TSA","car","aod","forecast","statsDK","tidyverse","lmtest"),dep=TRUE)
 #install.packages("Rtools",dep=TRUE)
 #install.packages("statsDK",dep=TRUE)
+
 #rm(list=ls())
 library(plyr)
 library(usethis)
@@ -323,6 +324,7 @@ dev.off()
 
 
 #Run ITSD model with differencing and MA(1)
+
 #Model 2 in paper
 t6 <- arimax(logy, order = c(0,1,1), seasonal = c(1,0,0),
              io=c(79,97,132),
@@ -337,6 +339,7 @@ shapiro.test(t6$residuals)
 runs(t6$residuals)
 checkresiduals(t6,lag=24)
 adf.test(t6$residuals)
+
 
 mydata$p98 <-data.frame(p<-as.numeric(mydata$X==98))
 mydata$p133 <-data.frame(p<-as.numeric(mydata$X==133))
@@ -356,3 +359,31 @@ shapiro.test(t7$residuals)
 runs(t7$residuals)
 checkresiduals(t7,lag=24)
 adf.test(t7$residuals)
+
+
+
+#Run ITSD model with differencing and MA(1) an Pulse effect after AO
+#Model 2 in paper
+t6 <- arimax(logy, order = c(0,1,1), seasonal = c(1,0,0),
+             io=c(79,97,132),
+             xtransf = mydata[,c("pulse","step")
+                              ], transfer = list(c(1,0),c(0,0)))
+aicc6<-AICc(t6)
+aicc6
+summary(t6)
+tsdiag(t6, gof=24, tol = 0.1, col = "red", omit.initial = TRUE)
+
+shapiro.test(t6$residuals)
+runs(t6$residuals)
+checkresiduals(t6,lag=24)
+adf.test(t6$residuals)
+
+mydata$p98 <-data.frame(p<-as.numeric(mydata$X==98))
+mydata$p133 <-data.frame(p<-as.numeric(mydata$X==133))
+
+t7 <- arimax(logy, order = c(0,0,0), seasonal = c(1,0,0),
+       io=c(79,97,132),
+    xtransf = mydata[,c("pulse","step","p98","p133")
+    ], transfer = list(c(1,0),c(0,0),c(1,0),c(1,0)))
+aicc7<-AICc(t7)
+aicc7
