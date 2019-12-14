@@ -166,8 +166,6 @@ mydata$pulse <- as.numeric(mydata$year == 2013 & mydata$month==10)
 
 mydata$step <- as.numeric((mydata$year >= 2013 & mydata$month>=10) |(mydata$year >= 2014) )
 
-mydata$p98 <- as.numeric(mydata$x == 98)
-mydata$p133 <- as.numeric(mydata$x==133)
 
 
 #Combine TS-data with denominator dataset
@@ -378,12 +376,62 @@ runs(t6$residuals)
 checkresiduals(t6,lag=24)
 adf.test(t6$residuals)
 
-mydata$p98 <-data.frame(p<-as.numeric(mydata$X==98))
-mydata$p133 <-data.frame(p<-as.numeric(mydata$X==133))
+mydata$p97 <-data.frame(p<-as.numeric(mydata$X==97))
+mydata$p132 <-data.frame(p<-as.numeric(mydata$X==132))
 
 t7 <- arimax(logy, order = c(0,0,0), seasonal = c(1,0,0),
              io=c(79,97,132),
-             xtransf = mydata[,c("pulse","step","p98","p133")
+             xtransf = mydata[,c("pulse","step","p99","p133")
                               ], transfer = list(c(1,0),c(0,0),c(1,0),c(1,0)))
 aicc7<-AICc(t7)
 aicc7
+summary(t7)
+tsdiag(t7, gof=24, tol = 0.1, col = "red", omit.initial = TRUE)
+
+shapiro.test(t7$residuals)
+runs(t7$residuals)
+checkresiduals(t7,lag=24)
+adf.test(t7$residuals)
+
+
+
+#Robustness 1 - moving reform obe year to the left along time axis
+
+
+log_diss = log(diss_ts)
+
+#Run ITSD model with step-increase in divorce risk
+#Model 2 in paper
+t5a <- arimax(log_diss, order = c(0,0,0), seasonal = c(1,0,0),
+             xtransf = mydata[,"step"], transfer = list(c(0,0)))
+
+summary(t5a)
+##test for patterns in residuals
+shapiro.test(t5a$residuals)
+runs(t5a$residuals)
+
+#Additional residual check outside scope of Box-Ljung
+checkresiduals(t5a,lag=24)
+adf.test(t5a$residuals)
+
+#Corrected AIC
+aicc5a<-AICc(t5a)
+aicc5a
+
+
+t5b <- arimax(log_diss, order = c(1,1,1), seasonal = c(1,0,1),
+              xtransf = mydata[,"step"], transfer = list(c(0,0)))
+
+summary(t5b)
+##test for patterns in residuals
+shapiro.test(t5b$residuals)
+runs(t5b$residuals)
+
+#Additional residual check outside scope of Box-Ljung
+checkresiduals(t5b,lag=24)
+adf.test(t5b$residuals)
+
+#Corrected AIC
+aicc5b<-AICc(t5b)
+aicc5b
+
