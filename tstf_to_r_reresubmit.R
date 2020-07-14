@@ -9,6 +9,16 @@
 #install.packages("Rtools",dep=TRUE)
 #install.packages("statsDK",dep=TRUE)
 
+
+##
+##
+##  THIS PROGRAM PERFORMS TIME SERIES ANALYSE ON PUBLICALLY AVAILABLE DATA
+##  FROM STATISTICS DENMARK AND ALLOWS REPRODUCTION OF RESULTS FROM FALLESEN (2020 JMF)
+##
+##  IN CASE StatsDK PACKAGE DOES NOT WORK, USE ATTACHED DATA FILE SAMPLE.CSV INSTEAD
+##
+##
+
 #rm(list=ls())
 library(plyr)
 library(usethis)
@@ -48,10 +58,10 @@ variable_overview
 
 
 unmarried<-retrieve_data("FOLK1A",
-                         OMRÃ…DE="000",CIVILSTAND="U,E,F",ALDER="*")
+                         OMRÅDE="000",CIVILSTAND="U,E,F",ALDER="*")
 
 unmarried$alder<-destring(unmarried$ALDER, keep = "0-9.-")
-unmarried<-subset(unmarried,KÃ˜N=="Total" & alder > 17)
+unmarried<-subset(unmarried,KØN=="Total" & alder > 17)
 temp_x<-aggregate(unmarried$INDHOLD, by = list(trt = unmarried$TID), FUN=sum)
 temp_x$Q<-substring(temp_x$trt,5,6)
 temp_x$year<-substring(temp_x$trt,1,4)
@@ -75,7 +85,7 @@ variable_overview
 unmarried2007<-retrieve_data("BEF1A07", 
                              CIVILSTAND="U,E,F,L,O",ALDER="*",TID="2007",KOEN="*")
 unmarried2007$alder<-destring(unmarried2007$ALDER, keep = "0-9.-")
-unmarried2007<-subset(unmarried2007,OMRÃ…DE=="All Denmark" & alder > 17 & TID ==2007)
+unmarried2007<-subset(unmarried2007,OMRÅDE=="All Denmark" & alder > 17 & TID ==2007)
 temp_x<-aggregate(unmarried2007$INDHOLD, by = list(trt = unmarried2007$TID), FUN=sum)
 names(temp_x)[names(temp_x)=="trt"] <- "year"
 
@@ -99,8 +109,8 @@ bevc3$month<-substr(TID,6,7)
 
 ##Limit sample to January, 2007 -- December, 2018
 
-data<-subset(bevc3,BEVÃ†GELSEV=="Divorces" & year>2006 & year < 2019,select=c("INDHOLD","year","month"))
-marriage_rate<-subset(bevc3,BEVÃ†GELSEV=="Marriages" & year>2006 & year < 2019,select=c("INDHOLD","year","month"))
+data<-subset(bevc3,BEVÆGELSEV=="Divorces" & year>2006 & year < 2019,select=c("INDHOLD","year","month"))
+marriage_rate<-subset(bevc3,BEVÆGELSEV=="Marriages" & year>2006 & year < 2019,select=c("INDHOLD","year","month"))
 
 detach(bevc3)
 
@@ -148,7 +158,7 @@ variable_overview
 
 ##Retrieve number of mariages at start of year 2007-2019
 data<-retrieve_data("FAM44N",Tid = "2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019",
-                    OMRÃ…DE="000",
+                    OMRÅDE="000",
                     FAMTYP="PARF")
 
 ##Aggregate across number of children/individuals living in household
@@ -395,7 +405,7 @@ adf.test(t7$residuals)
 
 
 
-#Robustness 1 - moving reform obe year to the left along time axis
+#Robustness 1 - moving reform one year to the left along time axis
 
 
 log_diss = log(diss_ts)
